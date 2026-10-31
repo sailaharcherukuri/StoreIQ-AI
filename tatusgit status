@@ -1,0 +1,18 @@
+ README.md                     |   1 [31m-[m
+ ai/env_temp                   |   0
+ ai/forecasting.py             |   0
+ app.py                        | 430 [32m++++++++++++++++++++++++++++++++++++++++++[m
+ database/schema.sql           |  44 [32m++++[m[31m-[m
+ db.py                         |  21 [32m+++[m
+ modules/assistant.py          |  41 [32m++++[m
+ modules/batches.py            | 216 [32m+++++++++++++++++++++[m
+ modules/forecasting.py        | 161 [32m++++++++++++++++[m
+ modules/inventory.py          | 123 [32m++++++++++++[m
+ modules/purchase_orders.py    | 101 [32m++++++++++[m
+ modules/purchase_receiving.py | 179 [32m++++++++++++++++++[m
+ modules/suppliers.py          |  70 [32m+++++++[m
+ templates/inventory.html      |   0
+ test_db.py                    |  10 [32m+[m
+ test_inventory.py             |  16 [32m++[m
+ test_update.py                |  14 [32m++[m
+ 17 files changed, 1424 insertions(+), 3 deletions(-)
