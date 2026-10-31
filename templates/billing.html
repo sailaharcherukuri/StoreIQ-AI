@@ -1,0 +1,991 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoreIQ-AI | Billing POS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        :root {
+            --navy: #101c2c;
+            --navy-light: #172b40;
+            --navy-hover: #203b55;
+            --blue: #3b82f6;
+            --light-blue: #dbeafe;
+            --background: #f3f7fb;
+            --text: #172b3a;
+            --muted: #718096;
+            --border: #e2eaf2;
+            --shadow: 0 8px 28px rgba(16,28,44,.07);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 245px;
+            min-width: 245px;
+            background: var(--navy);
+            color: white;
+            padding: 27px 17px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .logo {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            padding: 5px 13px 30px;
+            color: white;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 13px 14px;
+            border-radius: 9px;
+            color: #b6c5d5;
+            font-size: 12px;
+            font-weight: 600;
+            transition: .25s ease;
+        }
+
+        .sidebar a:hover {
+            background: var(--navy-hover);
+            color: white;
+        }
+
+        .sidebar a.active {
+            background: var(--blue);
+            color: white;
+            box-shadow: 0 5px 15px rgba(59,130,246,.25);
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            padding: 32px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 27px;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -.4px;
+        }
+
+        .topbar h1 {
+            color: var(--navy);
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .welcome {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 7px;
+        }
+
+        .btn, button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            border-radius: 8px;
+            background: var(--navy);
+            color: white;
+            padding: 11px 17px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .25s ease;
+        }
+
+        .btn:hover, button:hover {
+            background: var(--navy-hover);
+            transform: translateY(-2px);
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 22px;
+            box-shadow: var(--shadow);
+        }
+
+        .panel-heading {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            margin-bottom: 22px;
+        }
+
+        .heading-icon {
+            width: 43px;
+            height: 43px;
+            border-radius: 11px;
+            background: var(--light-blue);
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+        }
+
+        .panel-heading h2 {
+            color: var(--navy);
+            font-size: 16px;
+        }
+
+        .panel-heading p {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 13px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field label, .form-label {
+            color: #40536a;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        select, input {
+            min-height: 43px;
+            padding: 10px 13px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 12px;
+            outline: none;
+            transition: .2s ease;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+        }
+
+        #product {
+            min-width: 280px;
+        }
+
+        #quantity {
+            width: 110px;
+        }
+
+        .primary-btn {
+            min-height: 43px;
+            padding: 0 20px;
+            background: var(--navy);
+            color: white;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .add-btn, .edit-btn {
+            background: var(--blue);
+        }
+
+        .add-btn:hover, .edit-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .customer-section {
+            margin-bottom: 20px;
+        }
+
+        .customer-section select {
+            width: 100%;
+            max-width: 350px;
+            margin-top: 9px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 550px;
+        }
+
+        th {
+            background: #edf3fa;
+            color: var(--navy);
+            font-size: 11px;
+            font-weight: 700;
+            text-align: left;
+            padding: 15px 13px;
+        }
+
+        td {
+            padding: 15px 13px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            color: #40536a;
+        }
+
+        tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        .empty-cart {
+            text-align: center;
+            color: var(--muted);
+            padding: 28px;
+        }
+
+        .remove {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 8px 12px;
+            border-radius: 7px;
+            font-size: 11px;
+        }
+
+        .remove:hover {
+            background: #fecaca;
+        }
+
+        .billing-summary {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .summary-box {
+            width: 100%;
+            max-width: 350px;
+            background: #f4f8fd;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 13px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .summary-row strong {
+            color: var(--text);
+        }
+
+        .grand-total {
+            border-top: 1px solid #d5e0ed;
+            padding-top: 15px;
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .payment-field {
+            margin-top: 20px;
+        }
+
+        .payment-field select {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .checkout {
+            width: 100%;
+            min-height: 47px;
+            margin-top: 18px;
+            border-radius: 8px;
+            background: var(--navy);
+            color: white;
+            font-size: 13px;
+        }
+
+        .checkout:hover {
+            background: var(--navy-hover);
+        }
+
+        .message {
+            padding: 13px 16px;
+            margin-bottom: 15px;
+            border-radius: 9px;
+            font-size: 12px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 65px 20px;
+        }
+
+        .empty-icon {
+            width: 85px;
+            height: 85px;
+            border-radius: 22px;
+            background: var(--light-blue);
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            margin: 0 auto 20px;
+        }
+
+        .empty-state h2 {
+            color: var(--navy);
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.8;
+            max-width: 440px;
+            margin: auto;
+        }
+
+        .invoice {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 25px;
+            background: white;
+        }
+
+        .invoice-success {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            background: #eff6ff;
+            padding: 17px;
+            border-radius: 10px;
+            margin-bottom: 23px;
+            color: #1d4ed8;
+        }
+
+        .invoice-success i {
+            font-size: 25px;
+        }
+
+        .invoice-success h2 {
+            font-size: 17px;
+        }
+
+        .invoice-success p {
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .invoice-info {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .invoice-info strong {
+            color: var(--navy);
+        }
+
+        .invoice-total {
+            text-align: right;
+            margin-top: 22px;
+        }
+
+        .invoice-total h3 {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 9px;
+        }
+
+        .invoice-total h2 {
+            color: var(--navy);
+            font-size: 25px;
+        }
+
+        .invoice-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .new-bill {
+            background: var(--blue);
+        }
+
+        .new-bill:hover {
+            background: #1d4ed8;
+        }
+
+        .footer {
+            text-align: center;
+            color: #91a0ae;
+            font-size: 11px;
+            padding: 20px 0 5px;
+        }
+
+        @media(max-width:950px) {
+            .sidebar {
+                width: 205px;
+                min-width: 205px;
+            }
+
+            .main-content {
+                padding: 23px;
+            }
+        }
+
+        @media(max-width:700px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                padding: 15px;
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 7px;
+            }
+
+            .logo {
+                width: 100%;
+                padding: 5px 8px 10px;
+            }
+
+            .sidebar a {
+                padding: 10px;
+                font-size: 11px;
+            }
+
+            .main-content {
+                padding: 18px;
+            }
+
+            .topbar h1 {
+                font-size: 22px;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #product, #quantity {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .form-row button {
+                width: 100%;
+            }
+
+            .billing-summary {
+                justify-content: stretch;
+            }
+
+            .summary-box {
+                max-width: none;
+            }
+
+            .invoice-actions button,
+            .invoice-actions a {
+                width: 100%;
+            }
+
+            .invoice-actions a button {
+                width: 100%;
+            }
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .sidebar, .topbar, .footer, .no-print {
+                display: none !important;
+            }
+
+            .main-content {
+                padding: 0;
+            }
+
+            .panel, .invoice {
+                box-shadow: none;
+                border: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-store"></i> StoreIQ-AI
+        </div>
+
+        <a href="{{ url_for('dashboard') }}">
+            <i class="fas fa-chart-pie"></i> Dashboard
+        </a>
+
+        <a href="{{ url_for('customers.customer_list') }}">
+            <i class="fas fa-users"></i> Customers
+        </a>
+
+        <a href="{{ url_for('billing.billing_page') }}" class="active">
+            <i class="fas fa-cash-register"></i> Billing / POS
+        </a>
+
+        <a href="{{ url_for('returns.returns_page') }}">
+            <i class="fas fa-rotate-left"></i> Returns
+        </a>
+
+        <a href="{{ url_for('auth.logout') }}">
+            <i class="fas fa-right-from-bracket"></i> Logout
+        </a>
+    </aside>
+
+    <main class="main-content">
+
+        <div class="topbar no-print">
+            <div>
+                <h1><i class="fas fa-cash-register"></i> Billing / POS</h1>
+                <p class="welcome">Create invoices and manage customer payments.</p>
+            </div>
+
+            <a class="btn" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="message">
+                    <i class="fas fa-circle-info"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        {% if invoice %}
+
+            <div class="panel invoice">
+
+                <div class="invoice-success">
+                    <i class="fas fa-circle-check"></i>
+                    <div>
+                        <h2>Payment Successful!</h2>
+                        <p>Your transaction has been completed successfully.</p>
+                    </div>
+                </div>
+
+                <div class="invoice-info">
+                    <div>
+                        Invoice Number:
+                        <strong>{{ invoice.invoice_no }}</strong>
+                    </div>
+
+                    <div>
+                        Payment Method:
+                        <strong>{{ invoice.payment_method|upper }}</strong>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for item in invoice.items %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>₹{{ "%.2f"|format(item.unit_price) }}</td>
+                                <td>₹{{ "%.2f"|format(item.total_price) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="invoice-total">
+                    <h3>Subtotal: ₹{{ "%.2f"|format(invoice.subtotal) }}</h3>
+                    <h2>Total: ₹{{ "%.2f"|format(invoice.total) }}</h2>
+                </div>
+
+                <div class="invoice-actions no-print">
+                    <button class="primary-btn" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Invoice
+                    </button>
+
+                    <a href="{{ url_for('billing.billing_page') }}">
+                        <button type="button" class="primary-btn new-bill">
+                            <i class="fas fa-plus"></i> New Bill
+                        </button>
+                    </a>
+                </div>
+
+            </div>
+
+        {% else %}
+
+            {% if products %}
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="heading-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <div>
+                            <h2>Select Products</h2>
+                            <p>Choose products and add them to your shopping cart.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="field">
+                            <label for="product">Product</label>
+
+                            <select id="product">
+                                <option value="">Select Product</option>
+
+                                {% for p in products %}
+                                <option
+                                    value="{{ p.product_id }}"
+                                    data-name="{{ p.product_name }}"
+                                    data-price="{{ p.selling_price }}"
+                                    data-stock="{{ p.quantity_on_hand }}">
+                                    {{ p.product_name }} - ₹{{ p.selling_price }} (Stock: {{ p.quantity_on_hand }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="quantity">Quantity</label>
+                            <input type="number" id="quantity" min="1" value="1">
+                        </div>
+
+                        <button type="button" class="primary-btn add-btn" onclick="addProduct()">
+                            <i class="fas fa-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <form method="POST" id="billingForm">
+
+                    <div class="panel">
+
+                        <div class="panel-heading">
+                            <div class="heading-icon">
+                                <i class="fas fa-cart-shopping"></i>
+                            </div>
+                            <div>
+                                <h2>Shopping Cart</h2>
+                                <p>Review your selected products before payment.</p>
+                            </div>
+                        </div>
+
+                        <div class="customer-section">
+                            <label class="form-label" for="customer">Customer</label>
+                            <br>
+
+                            <select name="customer_id" id="customer">
+                                <option value="">Walk-in Customer</option>
+
+                                {% for customer in customers %}
+                                <option value="{{ customer.customer_id }}">
+                                    {{ customer.customer_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <input type="hidden" name="cart" id="cart">
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="cartItems">
+                                    <tr>
+                                        <td colspan="5" class="empty-cart">
+                                            Your cart is empty.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="billing-summary">
+                            <div class="summary-box">
+
+                                <div class="summary-row">
+                                    <span>Subtotal</span>
+                                    <strong>₹<span id="subtotal">0.00</span></strong>
+                                </div>
+
+                                <div class="summary-row grand-total">
+                                    <span>Total Amount</span>
+                                    <strong>₹<span id="total">0.00</span></strong>
+                                </div>
+
+                                <div class="payment-field">
+                                    <label class="form-label" for="payment_method">
+                                        Payment Method
+                                    </label>
+
+                                    <select name="payment_method" id="payment_method">
+                                        <option value="cash">Cash</option>
+                                        <option value="card">Card</option>
+                                        <option value="upi">UPI</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                <button class="checkout" type="submit">
+                                    <i class="fas fa-lock"></i> Complete Payment
+                                </button>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+
+            {% else %}
+
+                <div class="panel empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+
+                    <h2>No Products Available</h2>
+
+                    <p>
+                        Products have not been added to the inventory yet.
+                        Once the inventory setup is completed, available products
+                        and stock quantities will automatically appear here.
+                    </p>
+
+                    <p style="margin-top:15px;">
+                        <i class="fas fa-info-circle"></i>
+                        Please contact your inventory team for product setup.
+                    </p>
+                </div>
+
+            {% endif %}
+
+        {% endif %}
+
+        <div class="footer">
+            © 2026 StoreIQ-AI | Intelligent Store Management System
+        </div>
+
+    </main>
+</div>
+
+<script>
+    let cart = [];
+
+    function addProduct() {
+        const select = document.getElementById("product");
+        const quantityInput = document.getElementById("quantity");
+
+        if (!select || !select.value) {
+            alert("Please select a product.");
+            return;
+        }
+
+        const option = select.options[select.selectedIndex];
+        const id = Number(option.value);
+        const name = option.dataset.name;
+        const price = Number(option.dataset.price);
+        const stock = Number(option.dataset.stock);
+        const quantity = Number(quantityInput.value);
+
+        if (!Number.isInteger(quantity) || quantity < 1) {
+            alert("Enter a valid quantity.");
+            return;
+        }
+
+        if (!Number.isFinite(price) || price < 0 ||
+            !Number.isInteger(stock) || stock < 0) {
+            alert("Invalid product price or stock information.");
+            return;
+        }
+
+        const existing = cart.find(item => item.id === id);
+        const currentQuantity = existing ? existing.quantity : 0;
+
+        if (currentQuantity + quantity > stock) {
+            alert("Requested quantity exceeds available stock.");
+            return;
+        }
+
+        if (existing) {
+            existing.quantity += quantity;
+        } else {
+            cart.push({ id, name, price, quantity, stock });
+        }
+
+        renderCart();
+
+        select.value = "";
+        quantityInput.value = 1;
+    }
+
+    function removeProduct(id) {
+        cart = cart.filter(item => item.id !== id);
+        renderCart();
+    }
+
+    function renderCart() {
+        const tbody = document.getElementById("cartItems");
+
+        if (!tbody) return;
+
+        tbody.replaceChildren();
+
+        let subtotal = 0;
+
+        if (cart.length === 0) {
+            const row = tbody.insertRow();
+            const cell = row.insertCell();
+
+            cell.colSpan = 5;
+            cell.className = "empty-cart";
+            cell.textContent = "Your cart is empty.";
+        }
+
+        cart.forEach(item => {
+            const lineTotal = item.price * item.quantity;
+            subtotal += lineTotal;
+
+            const row = tbody.insertRow();
+
+            [
+                item.name,
+                "₹" + item.price.toFixed(2),
+                item.quantity,
+                "₹" + lineTotal.toFixed(2)
+            ].forEach(value => {
+                const cell = row.insertCell();
+                cell.textContent = value;
+            });
+
+            const actionCell = row.insertCell();
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "remove";
+            button.textContent = "Remove";
+            button.onclick = () => removeProduct(item.id);
+
+            actionCell.appendChild(button);
+        });
+
+        document.getElementById("subtotal").textContent = subtotal.toFixed(2);
+        document.getElementById("total").textContent = subtotal.toFixed(2);
+
+        document.getElementById("cart").value = cart
+            .map(item => item.id + ":" + item.quantity)
+            .join(",");
+    }
+
+    document.getElementById("billingForm")?.addEventListener("submit", function(event) {
+        if (cart.length === 0) {
+            event.preventDefault();
+            alert("Please add products to your cart.");
+        }
+    });
+</script>
+
+</body>
+</html>

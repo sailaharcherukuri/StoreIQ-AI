@@ -334,9 +334,9 @@ CREATE TABLE stock_transfers (
     notes VARCHAR(500),
     CONSTRAINT chk_transfer_different_stores CHECK (from_store_id <> to_store_id),
     CONSTRAINT fk_transfer_from_store FOREIGN KEY (from_store_id)
-        REFERENCES stores(store_id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT fk_transfer_to_store FOREIGN KEY (to_store_id)
-        REFERENCES stores(store_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    REFERENCES stores(store_id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+CONSTRAINT fk_transfer_to_store FOREIGN KEY (to_store_id)
+    REFERENCES stores(store_id) ON DELETE RESTRICT ON UPDATE RESTRICT,
     CONSTRAINT fk_transfer_user FOREIGN KEY (initiated_by)
         REFERENCES users(user_id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB;

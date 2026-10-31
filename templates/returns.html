@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoreIQ-AI | Returns</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+        }
+        input[type="text"], input[type="number"] {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #f1f5f9;
+        }
+        .message {
+            padding: 10px;
+            background: #e0f2fe;
+            margin: 10px 0;
+        }
+        .disabled {
+            background: #aaa;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Returns Management</h1>
+
+    <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="message">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <h2>Search Invoice</h2>
+
+    <form method="GET" action="{{ url_for('returns.returns_page') }}">
+        <input
+            type="text"
+            name="invoice_no"
+            placeholder="Enter invoice number"
+            value="{{ invoice_no }}"
+            required
+        >
+        <button type="submit">Search Invoice</button>
+    </form>
+
+    {% if sale %}
+        <hr>
+
+        <h2>Invoice Details</h2>
+
+        <p><strong>Invoice:</strong> {{ sale.invoice_no }}</p>
+        <p><strong>Sale ID:</strong> {{ sale.sale_id }}</p>
+        <p><strong>Total Amount:</strong> ₹{{ sale.total_amount }}</p>
+        <p><strong>Status:</strong> {{ sale.status }}</p>
+
+        <h2>Purchased Products</h2>
+
+        <form method="POST" action="{{ url_for('returns.process_return') }}">
+            <input type="hidden" name="sale_id" value="{{ sale.sale_id }}">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Purchased</th>
+                        <th>Already Returned</th>
+                        <th>Remaining</th>
+                        <th>Refund / Unit</th>
+                        <th>Return Quantity</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.purchased_quantity }}</td>
+                        <td>{{ item.returned_quantity }}</td>
+                        <td>{{ item.remaining_quantity }}</td>
+                        <td>₹{{ item.refund_per_unit }}</td>
+                        <td>
+                            <input
+                                type="number"
+                                name="quantity_{{ item.sale_item_id }}"
+                                min="0"
+                                max="{{ item.remaining_quantity }}"
+                                value="0"
+                                {% if item.remaining_quantity == 0 %}
+                                    disabled
+                                {% endif %}
+                            >
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h3>Return Reason</h3>
+
+            <input
+                type="text"
+                name="reason"
+                placeholder="Enter reason for return"
+                style="width: 90%;"
+            >
+
+            <br><br>
+
+            <button type="submit">Process Return</button>
+        </form>
+
+    {% elif invoice_no %}
+        <p>No matching invoice found.</p>
+    {% endif %}
+</div>
+</body>
+</html>

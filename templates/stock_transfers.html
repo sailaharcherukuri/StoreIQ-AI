@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Transfers | StoreIQ-AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .transfer-container { max-width: 1200px; margin: 25px auto; padding: 20px; }
+        .transfer-panel { background: white; padding: 22px; margin-bottom: 24px; border-radius: 10px; box-shadow: 0 2px 10px #00000010; }
+        .transfer-panel h2 { margin-top: 0; }
+        .transfer-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+        .transfer-panel input, .transfer-panel select, .transfer-panel textarea { width: 100%; padding: 10px; margin: 7px 0 14px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .transfer-panel textarea { min-height: 65px; }
+        .transfer-panel button { padding: 9px 14px; border: 0; border-radius: 6px; cursor: pointer; margin: 3px; }
+        .primary-btn { background: #2563eb; color: white; }
+        .success-btn { background: #15803d; color: white; }
+        .danger-btn { background: #dc2626; color: white; }
+        .secondary-btn { background: #64748b; color: white; }
+        .item-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; align-items: center; }
+        .status { padding: 5px 9px; border-radius: 15px; background: #e2e8f0; display: inline-block; font-size: 12px; }
+        .status.received { background: #dcfce7; color: #166534; }
+        .status.cancelled { background: #fee2e2; color: #991b1b; }
+        .status.dispatched { background: #dbeafe; color: #1d4ed8; }
+        .status.requested { background: #fef3c7; color: #92400e; }
+        .table-wrap { overflow-x: auto; }
+        .transfer-table { width: 100%; border-collapse: collapse; min-width: 750px; }
+        .transfer-table th, .transfer-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .transfer-table th { background: #f8fafc; }
+        .flash-message { padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #f1f5f9; }
+        @media(max-width: 650px) {
+            .transfer-form-grid { grid-template-columns: 1fr; }
+            .item-row { grid-template-columns: 1fr 1fr; }
+            .item-row button { grid-column: 1 / -1; }
+        }
+    </style>
+</head>
+<body>
+<div class="transfer-container">
+    <div style="margin-bottom:20px;">
+        <a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+        <h1>Stock Transfer Management</h1>
+        <p>Create and manage stock transfers between stores.</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-message">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="transfer-panel">
+        <h2>Create Transfer Request</h2>
+        {% if stores and products %}
+        <form method="POST" action="{{ url_for('stock_transfers.transfer_list') }}">
+            <div class="transfer-form-grid">
+                <div>
+                    <label>Destination Store</label>
+                    <select name="to_store_id" required>
+                        <option value="">Select destination store</option>
+                        {% for store in stores %}
+                            <option value="{{ store.store_id }}">{{ store.store_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Notes</label>
+                    <textarea name="notes" maxlength="500" placeholder="Optional transfer notes"></textarea>
+                </div>
+            </div>
+
+            <h3>Products</h3>
+            <div id="transfer-items">
+                <div class="item-row">
+                    <select name="product_id[]" required>
+                        <option value="">Select product</option>
+                        {% for product in products %}
+                            <option value="{{ product.product_id }}">
+                                {{ product.product_name }}{% if product.sku %} ({{ product.sku }}){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" name="quantity[]" min="1" placeholder="Quantity" required>
+                    <button type="button" class="danger-btn" onclick="removeItem(this)">Remove</button>
+                </div>
+            </div>
+
+            <button type="button" class="secondary-btn" onclick="addItem()">+ Add Product</button>
+            <button type="submit" class="primary-btn">Create Transfer Request</button>
+        </form>
+        {% else %}
+            <p>Active stores or products are not available yet. Add them before creating a transfer.</p>
+        {% endif %}
+    </section>
+
+    <section class="transfer-panel">
+        <h2>Transfer History</h2>
+        <div class="table-wrap">
+            <table class="transfer-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>From Store</th>
+                        <th>To Store</th>
+                        <th>Items</th>
+                        <th>Requested By</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for transfer in transfers %}
+                    <tr>
+                        <td>#{{ transfer.transfer_id }}</td>
+                        <td>{{ transfer.from_store }}</td>
+                        <td>{{ transfer.to_store }}</td>
+                        <td>{{ transfer.item_count }}</td>
+                        <td>{{ transfer.initiated_by }}</td>
+                        <td>{{ transfer.requested_at }}</td>
+                        <td>
+                            <span class="status {{ transfer.status }}">
+                                {{ transfer.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if transfer.status == 'requested' and transfer.from_store_id == current_store %}
+                                <form method="POST" action="{{ url_for('stock_transfers.dispatch_transfer', transfer_id=transfer.transfer_id) }}" style="display:inline;" onsubmit="return confirm('Dispatch this transfer? Stock will move to the destination store.');">
+                                    <button class="success-btn" type="submit">Dispatch</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('stock_transfers.cancel_transfer', transfer_id=transfer.transfer_id) }}" style="display:inline;" onsubmit="return confirm('Cancel this request?');">
+                                    <button class="danger-btn" type="submit">Cancel</button>
+                                </form>
+                            {% elif transfer.status == 'dispatched' and transfer.to_store_id == current_store %}
+                                <form method="POST" action="{{ url_for('stock_transfers.receive_transfer', transfer_id=transfer.transfer_id) }}" onsubmit="return confirm('Confirm that this stock has been received?');">
+                                    <button class="success-btn" type="submit">Confirm Received</button>
+                                </form>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="8">No stock transfers found.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script>
+function addItem() {
+    const container = document.getElementById("transfer-items");
+    const firstRow = container.querySelector(".item-row");
+    const newRow = firstRow.cloneNode(true);
+    newRow.querySelector("select").selectedIndex = 0;
+    newRow.querySelector("input").value = "";
+    container.appendChild(newRow);
+}
+
+function removeItem(button) {
+    const container = document.getElementById("transfer-items");
+    if (container.children.length > 1) {
+        button.closest(".item-row").remove();
+    } else {
+        alert("At least one product row is required.");
+    }
+}
+</script>
+</body>
+</html>

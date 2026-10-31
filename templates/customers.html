@@ -1,0 +1,653 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoreIQ-AI | Customers</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        :root {
+            --navy: #101c2c;
+            --navy-light: #172b40;
+            --navy-hover: #203b55;
+            --blue: #3b82f6;
+            --blue-light: #60a5fa;
+            --light-blue: #dbeafe;
+            --background: #f3f7fb;
+            --text: #172b3a;
+            --muted: #718096;
+            --border: #e2eaf2;
+            --shadow: 0 8px 28px rgba(16,28,44,.07);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 245px;
+            min-width: 245px;
+            background: var(--navy);
+            color: white;
+            padding: 27px 17px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .logo {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            padding: 5px 13px 30px;
+            color: white;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 13px 14px;
+            border-radius: 9px;
+            color: #b6c5d5;
+            font-size: 12px;
+            font-weight: 600;
+            transition: .25s ease;
+        }
+
+        .sidebar a:hover {
+            background: var(--navy-hover);
+            color: white;
+        }
+
+        .sidebar a.active {
+            background: var(--blue);
+            color: white;
+            box-shadow: 0 5px 15px rgba(59,130,246,.25);
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            padding: 32px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 27px;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -.4px;
+        }
+
+        .topbar h1 {
+            color: var(--navy);
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .welcome {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 7px;
+        }
+
+        .btn, button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            border-radius: 8px;
+            background: var(--navy);
+            color: white;
+            padding: 11px 17px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .25s ease;
+        }
+
+        .btn:hover, button:hover {
+            background: var(--navy-hover);
+            transform: translateY(-2px);
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 22px;
+            box-shadow: var(--shadow);
+            animation: fadeIn .4s ease;
+        }
+
+        .panel h2 {
+            color: var(--navy);
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .panel-heading {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .heading-icon {
+            width: 39px;
+            height: 39px;
+            border-radius: 10px;
+            background: var(--light-blue);
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .customer-form {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .customer-form label,
+        .search-form label {
+            display: block;
+            color: #40536a;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            min-height: 42px;
+            padding: 11px 13px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            background: white;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 12px;
+            transition: .2s ease;
+        }
+
+        input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+        }
+
+        .customer-form button {
+            min-height: 42px;
+            margin-bottom: 0;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-form input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .clear-btn {
+            background: #eaf1f9;
+            color: var(--navy);
+        }
+
+        .clear-btn:hover {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .table-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .count {
+            background: var(--light-blue);
+            color: #1d4ed8;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 780px;
+        }
+
+        th {
+            background: #edf3fa;
+            color: var(--navy);
+            padding: 15px 13px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        td {
+            padding: 15px 13px;
+            border-bottom: 1px solid var(--border);
+            color: #40536a;
+            font-size: 12px;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        .customer-id {
+            color: #2563eb;
+            font-weight: 700;
+        }
+
+        .customer-details strong {
+            color: var(--navy);
+            font-size: 12px;
+        }
+
+        .customer-details span {
+            display: block;
+            color: var(--muted);
+            margin-top: 5px;
+            font-size: 11px;
+        }
+
+        .edit-form {
+            min-width: 170px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .edit-form input {
+            margin: 0;
+            min-height: 36px;
+            padding: 8px 10px;
+        }
+
+        .edit-form button {
+            background: var(--blue);
+            padding: 9px 12px;
+            font-size: 11px;
+        }
+
+        .edit-form button:hover {
+            background: #1d4ed8;
+        }
+
+        .delete-btn {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 9px 13px;
+        }
+
+        .delete-btn:hover {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        .message {
+            padding: 13px 16px;
+            margin-bottom: 15px;
+            border-radius: 9px;
+            font-size: 12px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #91a0ae;
+            font-size: 11px;
+            padding: 15px 0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media(max-width:950px) {
+            .sidebar {
+                width: 205px;
+                min-width: 205px;
+            }
+
+            .main-content {
+                padding: 23px;
+            }
+        }
+
+        @media(max-width:700px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                padding: 15px;
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 7px;
+            }
+
+            .logo {
+                width: 100%;
+                padding: 5px 8px 10px;
+            }
+
+            .sidebar a {
+                padding: 10px;
+                font-size: 11px;
+            }
+
+            .main-content {
+                padding: 18px;
+            }
+
+            .topbar h1 {
+                font-size: 22px;
+            }
+
+            .customer-form {
+                grid-template-columns: 1fr;
+            }
+
+            .search-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-form .btn,
+            .search-form button {
+                width: 100%;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-store"></i> StoreIQ-AI
+        </div>
+
+        <a href="{{ url_for('dashboard') }}">
+            <i class="fas fa-chart-pie"></i> Dashboard
+        </a>
+
+        <a href="{{ url_for('customers.customer_list') }}" class="active">
+            <i class="fas fa-users"></i> Customers
+        </a>
+
+        <a href="{{ url_for('billing.billing_page') }}">
+            <i class="fas fa-cash-register"></i> Billing / POS
+        </a>
+
+        <a href="{{ url_for('returns.returns_page') }}">
+            <i class="fas fa-rotate-left"></i> Returns
+        </a>
+
+        <a href="{{ url_for('auth.logout') }}">
+            <i class="fas fa-right-from-bracket"></i> Logout
+        </a>
+    </aside>
+
+    <main class="main-content">
+
+        <div class="topbar">
+            <div>
+                <h1>Customer Management</h1>
+                <p class="welcome">Add, search, update and manage your customers.</p>
+            </div>
+
+            <a class="btn" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="message">
+                    <i class="fas fa-circle-info"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <div class="panel">
+
+            <div class="panel-heading">
+                <div class="heading-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div>
+                    <h2>Add New Customer</h2>
+                </div>
+            </div>
+
+            <form class="customer-form" action="{{ url_for('customers.add_customer') }}" method="POST">
+
+                <div>
+                    <label for="customer_name">Customer Name</label>
+                    <input type="text" id="customer_name" name="customer_name" placeholder="Enter customer name" required>
+                </div>
+
+                <div>
+                    <label for="phone">Phone Number</label>
+                    <input type="text" id="phone" name="phone" placeholder="Enter phone number">
+                </div>
+
+                <div>
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="Enter email address">
+                </div>
+
+                <button type="submit">
+                    <i class="fas fa-plus"></i> Add Customer
+                </button>
+
+            </form>
+        </div>
+
+        <div class="panel">
+
+            <div class="panel-heading">
+                <div class="heading-icon">
+                    <i class="fas fa-magnifying-glass"></i>
+                </div>
+                <div>
+                    <h2>Search Customers</h2>
+                </div>
+            </div>
+
+            <form class="search-form" method="GET" action="{{ url_for('customers.customer_list') }}">
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Search by name, phone or email"
+                    aria-label="Search customers">
+
+                <button type="submit">
+                    <i class="fas fa-search"></i> Search
+                </button>
+
+                <a class="btn clear-btn" href="{{ url_for('customers.customer_list') }}">
+                    <i class="fas fa-xmark"></i> Clear
+                </a>
+
+            </form>
+        </div>
+
+        <div class="panel">
+
+            <div class="table-heading">
+                <div class="panel-heading">
+                    <div class="heading-icon">
+                        <i class="fas fa-address-book"></i>
+                    </div>
+                    <div>
+                        <h2>Customer List</h2>
+                    </div>
+                </div>
+
+                <span class="count">{{ customers|length }} Customers</span>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer Details</th>
+                            <th>Update Customer</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+
+                            <td>
+                                <span class="customer-id">#{{ customer.customer_id }}</span>
+                            </td>
+
+                            <td>
+                                <div class="customer-details">
+                                    <strong>{{ customer.customer_name }}</strong>
+                                    <span>
+                                        <i class="fas fa-phone"></i>
+                                        {{ customer.phone or 'No phone' }}
+                                    </span>
+                                    <span>
+                                        <i class="fas fa-envelope"></i>
+                                        {{ customer.email or 'No email' }}
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <form class="edit-form" method="POST" action="{{ url_for('customers.update_customer', customer_id=customer.customer_id) }}">
+
+                                    <input type="text" name="customer_name" value="{{ customer.customer_name }}" placeholder="Customer name" required>
+
+                                    <input type="text" name="phone" value="{{ customer.phone or '' }}" placeholder="Phone">
+
+                                    <input type="email" name="email" value="{{ customer.email or '' }}" placeholder="Email">
+
+                                    <button type="submit">
+                                        <i class="fas fa-save"></i> Save Changes
+                                    </button>
+
+                                </form>
+                            </td>
+
+                            <td>
+                                <form method="POST" action="{{ url_for('customers.delete_customer', customer_id=customer.customer_id) }}" onsubmit="return confirm('Are you sure you want to delete this customer?')">
+
+                                    <button type="submit" class="delete-btn">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+
+                                </form>
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-users"></i>
+                                No customers found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            © 2026 StoreIQ-AI | Intelligent Store Management System
+        </div>
+
+    </main>
+</div>
+</body>
+</html>
