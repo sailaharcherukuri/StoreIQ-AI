@@ -332,7 +332,6 @@ CREATE TABLE stock_transfers (
     dispatched_at DATETIME NULL,
     received_at DATETIME NULL,
     notes VARCHAR(500),
-    CONSTRAINT chk_transfer_different_stores CHECK (from_store_id <> to_store_id),
     CONSTRAINT fk_transfer_from_store FOREIGN KEY (from_store_id)
         REFERENCES stores(store_id) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_transfer_to_store FOREIGN KEY (to_store_id)
@@ -369,7 +368,6 @@ CREATE TABLE product_recommendations (
     reason VARCHAR(500),
     generated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_recommendation_score CHECK (score >= 0),
-    CONSTRAINT chk_recommendation_not_same CHECK (product_id <> recommended_product_id),
     CONSTRAINT fk_recommendation_store FOREIGN KEY (store_id)
         REFERENCES stores(store_id) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_recommendation_product FOREIGN KEY (product_id)
@@ -399,6 +397,48 @@ CREATE TABLE weekly_reports (
 -- 3) A returned batch must have been allocated to that sale item, and cumulative
 --    returned quantity from that batch cannot exceed the quantity sold from it.
 DELIMITER $$
+
+-- MySQL compatibility: enforce distinct products with triggers.
+CREATE TRIGGER trg_product_recommendations_before_insert
+BEFORE INSERT ON product_recommendations
+FOR EACH ROW
+BEGIN
+    IF NEW.product_id = NEW.recommended_product_id THEN
+        SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = 'Recommended product must differ from the original product';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_product_recommendations_before_update
+BEFORE UPDATE ON product_recommendations
+FOR EACH ROW
+BEGIN
+    IF NEW.product_id = NEW.recommended_product_id THEN
+        SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = 'Recommended product must differ from the original product';
+    END IF;
+END$$
+
+-- MySQL compatibility: enforce different transfer stores with triggers.
+CREATE TRIGGER trg_stock_transfers_before_insert
+BEFORE INSERT ON stock_transfers
+FOR EACH ROW
+BEGIN
+    IF NEW.from_store_id = NEW.to_store_id THEN
+        SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = 'Source and destination stores must be different';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_stock_transfers_before_update
+BEFORE UPDATE ON stock_transfers
+FOR EACH ROW
+BEGIN
+    IF NEW.from_store_id = NEW.to_store_id THEN
+        SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = 'Source and destination stores must be different';
+    END IF;
+END$$
 
 CREATE TRIGGER trg_return_items_before_insert
 BEFORE INSERT ON return_items
